@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/database_service.dart';
 import 'focus_home_screen.dart';
+import 'permission_onboarding_screen.dart';
 import 'settings_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await _databaseService.setSetting('first_launch_complete', '1');
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const FocusHomeScreen()),
+      MaterialPageRoute(builder: (_) => const PermissionOnboardingScreen()),
     );
   }
 
