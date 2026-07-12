@@ -1,0 +1,54 @@
+import 'package:flutter/foundation.dart';
+import '../services/database_service.dart';
+
+class SettingsProvider extends ChangeNotifier {
+  final DatabaseService _databaseService = DatabaseService();
+
+  String _theme = 'dark_grey';
+  String _focusStartTime = '06:00';
+  String _focusEndTime = '18:00';
+  String _sleepStartTime = '22:00';
+  String _sleepEndTime = '06:00';
+  String _defaultSocialTimer = '30';
+  String _maxSocialTimer = '60';
+  String _alarmBufferMinutes = '30';
+  String _calendarId = '';
+  bool _firstLaunchComplete = false;
+
+  String get theme => _theme;
+  String get focusStartTime => _focusStartTime;
+  String get focusEndTime => _focusEndTime;
+  String get sleepStartTime => _sleepStartTime;
+  String get sleepEndTime => _sleepEndTime;
+  String get defaultSocialTimer => _defaultSocialTimer;
+  String get maxSocialTimer => _maxSocialTimer;
+  String get alarmBufferMinutes => _alarmBufferMinutes;
+  String get calendarId => _calendarId;
+  bool get firstLaunchComplete => _firstLaunchComplete;
+
+  Future<void> load() async {
+    _theme = await _databaseService.getSetting('theme', defaultValue: 'dark_grey');
+    _focusStartTime = await _databaseService.getSetting('focus_start_time', defaultValue: '06:00');
+    _focusEndTime = await _databaseService.getSetting('focus_end_time', defaultValue: '18:00');
+    _sleepStartTime = await _databaseService.getSetting('sleep_start_time', defaultValue: '22:00');
+    _sleepEndTime = await _databaseService.getSetting('sleep_end_time', defaultValue: '06:00');
+    _defaultSocialTimer = await _databaseService.getSetting('default_social_timer', defaultValue: '30');
+    _maxSocialTimer = await _databaseService.getSetting('max_social_timer', defaultValue: '60');
+    _alarmBufferMinutes = await _databaseService.getSetting('alarm_buffer_minutes', defaultValue: '30');
+    _calendarId = await _databaseService.getSetting('calendar_id', defaultValue: '');
+    _firstLaunchComplete = (await _databaseService.getSetting('first_launch_complete', defaultValue: '0')) == '1';
+    notifyListeners();
+  }
+
+  Future<void> setTheme(String value) async {
+    _theme = value;
+    await _databaseService.setSetting('theme', value);
+    notifyListeners();
+  }
+
+  Future<void> setFirstLaunchComplete(bool value) async {
+    _firstLaunchComplete = value;
+    await _databaseService.setSetting('first_launch_complete', value ? '1' : '0');
+    notifyListeners();
+  }
+}

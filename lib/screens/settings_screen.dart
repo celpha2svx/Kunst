@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/settings_provider.dart';
 import '../services/database_service.dart';
+import '../widgets/theme_selector.dart';
 
 class SettingsScreen extends StatelessWidget {
   SettingsScreen({super.key});
@@ -21,10 +24,32 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
-          ListTile(
-            leading: const Icon(Icons.palette),
-            title: const Text('Theme'),
-            subtitle: const Text('Dark mode is the current default.'),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ThemeSelector(),
+                const SizedBox(height: 16),
+                Text(
+                  'Focus Hours',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Start: ${context.watch<SettingsProvider>().focusStartTime}   End: ${context.watch<SettingsProvider>().focusEndTime}',
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Sleep Hours',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Start: ${context.watch<SettingsProvider>().sleepStartTime}   End: ${context.watch<SettingsProvider>().sleepEndTime}',
+                ),
+              ],
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.access_time),
