@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/database_service.dart';
+import 'focus_home_screen.dart';
+import 'settings_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -33,7 +35,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await _databaseService.setSetting('first_launch_complete', '1');
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const _HomePlaceholder()),
+      MaterialPageRoute(builder: (_) => const FocusHomeScreen()),
     );
   }
 
@@ -94,7 +96,19 @@ class _HomePlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('KUNST Home')),
+      appBar: AppBar(
+        title: const Text('KUNST Home'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => SettingsScreen()),
+              );
+            },
+            icon: const Icon(Icons.settings),
+          ),
+        ],
+      ),
       body: Center(
         child: Text(
           'Launcher foundation is ready.',
