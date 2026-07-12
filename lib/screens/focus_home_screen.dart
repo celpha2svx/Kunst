@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/task.dart';
 import '../services/database_service.dart';
+import 'evening_review_screen.dart';
+import 'night_planning_screen.dart';
 
 class FocusHomeScreen extends StatefulWidget {
   const FocusHomeScreen({super.key});
@@ -68,6 +70,22 @@ class _FocusHomeScreenState extends State<FocusHomeScreen> {
       appBar: AppBar(
         title: const Text('Focus Home'),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const NightPlanningScreen()),
+              );
+            },
+            icon: const Icon(Icons.nights_stay),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const EveningReviewScreen()),
+              );
+            },
+            icon: const Icon(Icons.rate_review),
+          ),
           IconButton(
             onPressed: _loadTasks,
             icon: const Icon(Icons.refresh),
