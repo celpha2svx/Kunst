@@ -6,7 +6,7 @@ import '../services/calendar_service.dart';
 import '../widgets/theme_selector.dart';
 
 class SettingsScreen extends StatefulWidget {
-  SettingsScreen({super.key});
+  const SettingsScreen({super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
