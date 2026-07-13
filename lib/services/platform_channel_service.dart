@@ -47,6 +47,10 @@ class PlatformChannelService {
     return (await _channel.invokeMethod<bool>('canScheduleExactAlarms')) ?? true;
   }
 
+  Future<bool> isIgnoringBatteryOptimizations() async {
+    return (await _channel.invokeMethod<bool>('isIgnoringBatteryOptimizations')) ?? false;
+  }
+
   Future<List<Map<String, dynamic>>> drainBlockedQueuePrefs() async {
     final res = await _channel.invokeMethod<dynamic>('drainBlockedQueuePrefs');
     if (res is List) {
