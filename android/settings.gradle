@@ -13,6 +13,12 @@ pluginManagement {
         if (flutterSdkPath != null && flutterSdkPath.trim().length() > 0) {
             includeBuild(flutterSdkPath)
         }
+    } else {
+        // In CI, prefer FLUTTER_ROOT environment variable if available
+        def envFlutter = System.getenv('FLUTTER_ROOT')
+        if (envFlutter != null && envFlutter.trim().length() > 0) {
+            includeBuild(envFlutter)
+        }
     }
 }
 
