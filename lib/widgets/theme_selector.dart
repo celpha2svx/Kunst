@@ -44,7 +44,7 @@ class _ThemeChip extends StatelessWidget {
   final String label;
   final String value;
 
-  const _ThemeChip({required this.label, required this.value, super.key});
+  const _ThemeChip({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
