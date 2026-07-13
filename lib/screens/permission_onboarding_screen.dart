@@ -107,7 +107,6 @@ class _PermissionCard extends StatelessWidget {
     required this.description,
     required this.actionLabel,
     required this.onAction,
-    super.key,
   });
 
   @override
