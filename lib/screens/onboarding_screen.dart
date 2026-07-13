@@ -33,7 +33,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'priority': 2,
       'status': 'pending',
     });
-    await _databaseService.setSetting('first_launch_complete', '1');
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const PermissionOnboardingScreen()),

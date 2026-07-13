@@ -22,9 +22,35 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
-        await db.execute('''
+        await _createSchema(db);
+        await _seedDefaults(db);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('''
+          CREATE TABLE IF NOT EXISTS worlds (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            description TEXT,
+            color TEXT,
+            icon TEXT,
+            sort_order INTEGER DEFAULT 0,
+            is_active INTEGER DEFAULT 1
+          )
+        ''');
+          await _seedWorldDefaults(db);
+        }
+      },
+      onOpen: (db) async {
+        await _seedDefaults(db);
+      },
+    );
+  }
+
+  Future<void> _createSchema(Database db) async {
+    await db.execute('''
           CREATE TABLE tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -44,7 +70,7 @@ class DatabaseService {
           )
         ''');
 
-        await db.execute('''
+    await db.execute('''
           CREATE TABLE settings (
             key TEXT PRIMARY KEY,
             value TEXT,
@@ -52,13 +78,71 @@ class DatabaseService {
           )
         ''');
 
-        await db.insert('settings', {
-          'key': 'theme',
-          'value': 'dark_grey',
-          'updated_at': DateTime.now().toIso8601String(),
-        });
+    await db.execute('''
+          CREATE TABLE worlds (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            description TEXT,
+            color TEXT,
+            icon TEXT,
+            sort_order INTEGER DEFAULT 0,
+            is_active INTEGER DEFAULT 1
+          )
+        ''');
+  }
+
+  Future<void> _seedDefaults(Database db) async {
+    await db.insert('settings', {
+      'key': 'theme',
+      'value': 'dark_grey',
+      'updated_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    await _seedWorldDefaults(db);
+  }
+
+  Future<void> _seedWorldDefaults(Database db) async {
+    final defaults = [
+      {
+        'name': 'Inner',
+        'description': 'Personal care, reflection, and internal work.',
+        'color': '#121212',
+        'icon': 'self_improvement',
+        'sort_order': 0,
+        'is_active': 1,
       },
-    );
+      {
+        'name': 'Outside',
+        'description': 'People, errands, and the external world.',
+        'color': '#1e1e1e',
+        'icon': 'public',
+        'sort_order': 1,
+        'is_active': 1,
+      },
+      {
+        'name': 'Future',
+        'description': 'Projects, long-term goals, and planning ahead.',
+        'color': '#2a2a2a',
+        'icon': 'rocket_launch',
+        'sort_order': 2,
+        'is_active': 1,
+      },
+    ];
+
+    for (final world in defaults) {
+      await db.insert('worlds', {
+        ...world,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+  }
+
+  Future<List<Map<String, Object?>>> getWorlds() async {
+    final db = await database;
+    return db.query('worlds', orderBy: 'sort_order ASC, name ASC');
+  }
+
+  Future<int> insertWorld(Map<String, Object?> world) async {
+    final db = await database;
+    return db.insert('worlds', world, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Map<String, Object?>>> getTasksForDate(String date) async {
@@ -132,10 +216,7 @@ class DatabaseService {
     final db = await database;
     await db.delete('tasks');
     await db.delete('settings');
-    await db.insert('settings', {
-      'key': 'theme',
-      'value': 'dark_grey',
-      'updated_at': DateTime.now().toIso8601String(),
-    });
+    await db.delete('worlds');
+    await _seedDefaults(db);
   }
 }

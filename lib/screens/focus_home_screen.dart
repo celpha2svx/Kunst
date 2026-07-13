@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/task.dart';
+import '../providers/settings_provider.dart';
+import '../services/calendar_service.dart';
 import '../services/database_service.dart';
 import 'evening_review_screen.dart';
 import 'night_planning_screen.dart';
@@ -14,15 +17,37 @@ class FocusHomeScreen extends StatefulWidget {
 
 class _FocusHomeScreenState extends State<FocusHomeScreen> {
   final DatabaseService _databaseService = DatabaseService();
+  final CalendarService _calendarService = CalendarService();
   final TextEditingController _taskController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  String _selectedWorld = 'Inner';
+  List<String> _worldNames = const ['Inner', 'Outside', 'Future'];
   List<Task> _tasks = [];
   bool _loading = true;
+  bool _loadingWorlds = true;
 
   @override
   void initState() {
     super.initState();
+    _loadWorlds();
     _loadTasks();
+  }
+
+  Future<void> _loadWorlds() async {
+    final worlds = await _databaseService.getWorlds();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _worldNames = worlds
+          .map((world) => world['name']?.toString() ?? '')
+          .where((name) => name.isNotEmpty)
+          .toList();
+      if (_worldNames.isNotEmpty && !_worldNames.contains(_selectedWorld)) {
+        _selectedWorld = _worldNames.first;
+      }
+      _loadingWorlds = false;
+    });
   }
 
   Future<void> _loadTasks() async {
@@ -40,10 +65,10 @@ class _FocusHomeScreenState extends State<FocusHomeScreen> {
       return;
     }
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    await _databaseService.insertTask({
+    final taskId = await _databaseService.insertTask({
       'name': name,
       'description': _descriptionController.text.trim(),
-      'world': 'Inner',
+      'world': _selectedWorld,
       'time_state': 'present',
       'type': 'immediate',
       'apps_needed': '[]',
@@ -53,6 +78,28 @@ class _FocusHomeScreenState extends State<FocusHomeScreen> {
       'priority': 2,
       'status': 'pending',
     });
+    final task = Task(
+      id: taskId,
+      name: name,
+      description: _descriptionController.text.trim(),
+      world: _selectedWorld,
+      timeState: 'present',
+      type: 'immediate',
+      appsNeeded: const [],
+      date: today,
+      startTime: '09:00',
+      endTime: '10:00',
+      priority: 2,
+      status: 'pending',
+    );
+    final calendarIdRaw = context.read<SettingsProvider>().calendarId;
+    final eventId = await _calendarService.syncTask(
+      task,
+      calendarId: int.tryParse(calendarIdRaw),
+    );
+    if (eventId > 0) {
+      await _databaseService.updateTask(taskId, {'calendar_event_id': eventId.toString()});
+    }
     _taskController.clear();
     _descriptionController.clear();
     await _loadTasks();
@@ -125,6 +172,30 @@ class _FocusHomeScreenState extends State<FocusHomeScreen> {
                         controller: _descriptionController,
                         decoration: const InputDecoration(
                           labelText: 'Notes',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: _selectedWorld,
+                        items: _worldNames
+                            .map((world) => DropdownMenuItem<String>(
+                                  value: world,
+                                  child: Text(world),
+                                ))
+                            .toList(),
+                        onChanged: _loadingWorlds
+                            ? null
+                            : (value) {
+                                if (value == null) {
+                                  return;
+                                }
+                                setState(() {
+                                  _selectedWorld = value;
+                                });
+                              },
+                        decoration: const InputDecoration(
+                          labelText: 'World',
                           border: OutlineInputBorder(),
                         ),
                       ),

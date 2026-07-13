@@ -1,8 +1,37 @@
 import 'package:flutter/material.dart';
+import '../services/platform_channel_service.dart';
+import '../services/database_service.dart';
 import 'focus_home_screen.dart';
 
-class PermissionOnboardingScreen extends StatelessWidget {
+class PermissionOnboardingScreen extends StatefulWidget {
   const PermissionOnboardingScreen({super.key});
+
+  @override
+  State<PermissionOnboardingScreen> createState() => _PermissionOnboardingScreenState();
+}
+
+class _PermissionOnboardingScreenState extends State<PermissionOnboardingScreen> {
+  final PlatformChannelService _platformChannelService = PlatformChannelService();
+  bool _saving = false;
+
+  Future<void> _completePermissions(BuildContext context) async {
+    final databaseService = DatabaseService();
+    await databaseService.setSetting('first_launch_complete', '1');
+    if (!context.mounted) {
+      return;
+    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const FocusHomeScreen()),
+    );
+  }
+
+  Future<void> _runAction(Future<bool> Function() action) async {
+    setState(() => _saving = true);
+    await action();
+    if (mounted) {
+      setState(() => _saving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,18 +54,47 @@ class PermissionOnboardingScreen extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
-              const _PermissionCard(title: 'Device admin', description: 'Needed for app blocking and focus enforcement.'),
-              const _PermissionCard(title: 'Calendar', description: 'Needed for syncing tasks with your calendar.'),
-              const _PermissionCard(title: 'Notifications', description: 'Needed to filter social distractions.'),
+              _PermissionCard(
+                title: 'Device admin',
+                description: 'Needed for app blocking and focus enforcement.',
+                actionLabel: 'Enable',
+                onAction: () => _platformChannelService.requestDeviceAdmin(),
+              ),
+              _PermissionCard(
+                title: 'Calendar',
+                description: 'Needed for syncing tasks with your calendar.',
+                actionLabel: 'Allow',
+                onAction: () => _platformChannelService.requestCalendarPermissions(),
+              ),
+              _PermissionCard(
+                title: 'Notifications',
+                description: 'Needed to filter social distractions.',
+                actionLabel: 'Open',
+                onAction: () => _platformChannelService.openNotificationListenerSettings(),
+              ),
+              _PermissionCard(
+                title: 'Usage access',
+                description: 'Needed to detect app usage for timer enforcement.',
+                actionLabel: 'Open',
+                onAction: () => _platformChannelService.openUsageAccessSettings(),
+              ),
+              _PermissionCard(
+                title: 'Exact alarms',
+                description: 'Needed to wake the device for planned tasks.',
+                actionLabel: 'Open',
+                onAction: () => _platformChannelService.requestExactAlarmSettings(),
+              ),
+              _PermissionCard(
+                title: 'Battery optimization',
+                description: 'Needed so Samsung does not kill background services.',
+                actionLabel: 'Open',
+                onAction: () => _platformChannelService.requestIgnoreBatteryOptimizations(),
+              ),
               const Spacer(),
               FilledButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (_) => const FocusHomeScreen()),
-                  );
-                },
+                onPressed: _saving ? null : () => _completePermissions(context),
                 icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Continue'),
+                label: Text(_saving ? 'Saving...' : 'Continue'),
               ),
             ],
           ),
@@ -49,8 +107,16 @@ class PermissionOnboardingScreen extends StatelessWidget {
 class _PermissionCard extends StatelessWidget {
   final String title;
   final String description;
+  final String actionLabel;
+  final Future<bool> Function() onAction;
 
-  const _PermissionCard({required this.title, required this.description, super.key});
+  const _PermissionCard({
+    required this.title,
+    required this.description,
+    required this.actionLabel,
+    required this.onAction,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +126,10 @@ class _PermissionCard extends StatelessWidget {
         leading: const Icon(Icons.security),
         title: Text(title),
         subtitle: Text(description),
+        trailing: TextButton(
+          onPressed: () => onAction(),
+          child: Text(actionLabel),
+        ),
       ),
     );
   }

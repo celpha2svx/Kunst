@@ -6,30 +6,37 @@ import '../providers/theme_provider.dart';
 class ThemeSelector extends StatelessWidget {
   const ThemeSelector({super.key});
 
+  static const Map<String, String> _themeLabels = {
+    'pure_black': 'Pure Black',
+    'dark_grey': 'Dark Grey',
+    'gunmetal': 'Gunmetal',
+    'silver_dark': 'Silver Dark',
+    'oled_saver': 'OLED Saver',
+  };
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
-    final themeProvider = context.watch<ThemeProvider>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Theme'),
+        Text(
+          'Theme',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 12,
-          children: [
-            _ThemeChip(label: 'Pure Black', value: 'pure_black'),
-            _ThemeChip(label: 'Dark Grey', value: 'dark_grey'),
-          ],
-        ),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () async {
-            await settings.setTheme(settings.theme == 'dark_grey' ? 'pure_black' : 'dark_grey');
-            themeProvider.setTheme(settings.theme);
-          },
-          child: const Text('Toggle theme'),
+          runSpacing: 8,
+          children: _themeLabels.entries
+              .map(
+                (entry) => _ThemeChip(
+                  label: entry.value,
+                  value: entry.key,
+                ),
+              )
+              .toList(),
         ),
       ],
     );
@@ -45,7 +52,6 @@ class _ThemeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
-    final themeProvider = context.watch<ThemeProvider>();
     final selected = settings.theme == value;
 
     return ChoiceChip(
@@ -53,7 +59,6 @@ class _ThemeChip extends StatelessWidget {
       selected: selected,
       onSelected: (_) async {
         await settings.setTheme(value);
-        themeProvider.setTheme(value);
       },
     );
   }

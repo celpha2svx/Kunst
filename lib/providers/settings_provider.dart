@@ -46,6 +46,12 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setCalendarId(String value) async {
+    _calendarId = value;
+    await _databaseService.setSetting('calendar_id', value);
+    notifyListeners();
+  }
+
   Future<void> setFirstLaunchComplete(bool value) async {
     _firstLaunchComplete = value;
     await _databaseService.setSetting('first_launch_complete', value ? '1' : '0');
