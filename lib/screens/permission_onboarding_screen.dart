@@ -12,7 +12,7 @@ class PermissionOnboardingScreen extends StatefulWidget {
 
 class _PermissionOnboardingScreenState extends State<PermissionOnboardingScreen> {
   final PlatformChannelService _platformChannelService = PlatformChannelService();
-  bool _saving = false;
+  final bool _saving = false;
 
   Future<void> _completePermissions(BuildContext context) async {
     final databaseService = DatabaseService();
