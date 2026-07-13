@@ -226,9 +226,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const ListTile(
-            leading: const Icon(Icons.access_time),
-            title: const Text('Focus Hours'),
-            subtitle: const Text('Morning planning and evening review are enabled.'),
+            leading: Icon(Icons.access_time),
+            title: Text('Focus Hours'),
+            subtitle: Text('Morning planning and evening review are enabled.'),
           ),
           ListTile(
             leading: const Icon(Icons.restore),
