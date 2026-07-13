@@ -45,6 +45,7 @@ class _NightPlanningScreenState extends State<NightPlanningScreen> {
 
   Future<void> _savePlan() async {
     setState(() => _saving = true);
+    final calendarIdRaw = context.read<SettingsProvider>().calendarId;
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     final date = DateFormat('yyyy-MM-dd').format(tomorrow);
     final taskId = await _databaseService.insertTask({
@@ -74,7 +75,6 @@ class _NightPlanningScreenState extends State<NightPlanningScreen> {
       priority: 3,
       status: 'pending',
     );
-    final calendarIdRaw = context.read<SettingsProvider>().calendarId;
     final eventId = await _calendarService.syncTask(
       task,
       calendarId: int.tryParse(calendarIdRaw),
