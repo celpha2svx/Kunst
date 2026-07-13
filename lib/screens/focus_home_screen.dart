@@ -64,6 +64,7 @@ class _FocusHomeScreenState extends State<FocusHomeScreen> {
     if (name.isEmpty) {
       return;
     }
+    final calendarIdRaw = context.read<SettingsProvider>().calendarId;
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final taskId = await _databaseService.insertTask({
       'name': name,
@@ -92,7 +93,6 @@ class _FocusHomeScreenState extends State<FocusHomeScreen> {
       priority: 2,
       status: 'pending',
     );
-    final calendarIdRaw = context.read<SettingsProvider>().calendarId;
     final eventId = await _calendarService.syncTask(
       task,
       calendarId: int.tryParse(calendarIdRaw),
