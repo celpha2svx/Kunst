@@ -25,6 +25,8 @@ class SettingsProvider extends ChangeNotifier {
   String get alarmBufferMinutes => _alarmBufferMinutes;
   String get calendarId => _calendarId;
   bool get firstLaunchComplete => _firstLaunchComplete;
+  bool _loaded = false;
+  bool get loaded => _loaded;
 
   Future<void> load() async {
     _theme = await _databaseService.getSetting('theme', defaultValue: 'dark_grey');
@@ -37,6 +39,7 @@ class SettingsProvider extends ChangeNotifier {
     _alarmBufferMinutes = await _databaseService.getSetting('alarm_buffer_minutes', defaultValue: '30');
     _calendarId = await _databaseService.getSetting('calendar_id', defaultValue: '');
     _firstLaunchComplete = (await _databaseService.getSetting('first_launch_complete', defaultValue: '0')) == '1';
+    _loaded = true;
     notifyListeners();
   }
 

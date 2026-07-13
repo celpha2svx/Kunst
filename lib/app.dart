@@ -24,9 +24,19 @@ class KunstApp extends StatelessWidget {
           },
         ),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
-          final settingsProvider = context.watch<SettingsProvider>();
+      child: Consumer2<ThemeProvider, SettingsProvider>(
+        builder: (context, themeProvider, settingsProvider, _) {
+          if (!settingsProvider.loaded) {
+            return const MaterialApp(
+              home: Scaffold(body: Center(child: CircularProgressIndicator())),
+            );
+          }
+
+          final selectedTheme = settingsProvider.theme;
+          if (themeProvider.currentThemeName != selectedTheme) {
+            themeProvider.setTheme(selectedTheme);
+          }
+
           return MaterialApp(
             title: 'KUNST Launcher',
             debugShowCheckedModeBanner: false,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  String _currentTheme = 'dark_grey';
+  String _currentTheme;
+
+  ThemeProvider({String themeKey = 'dark_grey'}) : _currentTheme = themeKey;
 
   String get currentThemeName => _currentTheme;
 
@@ -65,10 +67,7 @@ class ThemeProvider extends ChangeNotifier {
   ThemeData get currentTheme => themes[_currentTheme] ?? themes['dark_grey']!;
 
   void setTheme(String themeName) {
-    if (themes.containsKey(themeName)) {
-      if (_currentTheme == themeName) {
-        return;
-      }
+    if (themes.containsKey(themeName) && _currentTheme != themeName) {
       _currentTheme = themeName;
       notifyListeners();
     }
