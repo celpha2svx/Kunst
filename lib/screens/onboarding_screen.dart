@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/database_service.dart';
-import 'focus_home_screen.dart';
 import 'permission_onboarding_screen.dart';
 import 'settings_screen.dart';
 
@@ -42,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -84,35 +83,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HomePlaceholder extends StatelessWidget {
-  const _HomePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('KUNST Home'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => SettingsScreen()),
-              );
-            },
-            icon: const Icon(Icons.settings),
-          ),
-        ],
-      ),
-      body: Center(
-        child: Text(
-          'Launcher foundation is ready.',
-          style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
     );

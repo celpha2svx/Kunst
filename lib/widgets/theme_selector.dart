@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
-import '../providers/theme_provider.dart';
 
 class ThemeSelector extends StatelessWidget {
   const ThemeSelector({super.key});
@@ -16,8 +15,6 @@ class ThemeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.watch<SettingsProvider>();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

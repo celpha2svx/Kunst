@@ -25,18 +25,10 @@ class _PermissionOnboardingScreenState extends State<PermissionOnboardingScreen>
     );
   }
 
-  Future<void> _runAction(Future<bool> Function() action) async {
-    setState(() => _saving = true);
-    await action();
-    if (mounted) {
-      setState(() => _saving = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
