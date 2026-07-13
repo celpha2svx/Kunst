@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import '../services/database_service.dart';
 
 class SettingsProvider extends ChangeNotifier {
@@ -27,6 +28,7 @@ class SettingsProvider extends ChangeNotifier {
   bool get firstLaunchComplete => _firstLaunchComplete;
   bool _loaded = false;
   bool get loaded => _loaded;
+  static bool _platformHandlerRegistered = false;
 
   Future<void> load() async {
     _theme = await _databaseService.getSetting('theme', defaultValue: 'dark_grey');
@@ -39,6 +41,35 @@ class SettingsProvider extends ChangeNotifier {
     _alarmBufferMinutes = await _databaseService.getSetting('alarm_buffer_minutes', defaultValue: '30');
     _calendarId = await _databaseService.getSetting('calendar_id', defaultValue: '');
     _firstLaunchComplete = (await _databaseService.getSetting('first_launch_complete', defaultValue: '0')) == '1';
+    // migrate any blocked notifications stored in native prefs into the app DB
+    await _databaseService.migrateBlockedQueueFromPrefs();
+    // register platform handler once to persist blocked notifications when app is foreground
+    if (!_platformHandlerRegistered) {
+      const MethodChannel('kunst_launcher/platform').setMethodCallHandler((call) async {
+        if (call.method == 'notificationBlocked') {
+          final args = call.arguments as Map?;
+          if (args != null) {
+            await _databaseService.insertBlockedNotification({
+              'packageName': args['packageName']?.toString(),
+              'title': args['title']?.toString(),
+              'text': args['text']?.toString(),
+              'timestamp': args['timestamp'],
+            });
+          }
+        } else if (call.method == 'alarmFired') {
+          final args = call.arguments as Map?;
+          final id = args?['id'];
+          await _databaseService.insertBlockedNotification({
+            'packageName': 'system.alarm',
+            'title': 'Alarm fired',
+            'text': 'Alarm id: ${id ?? 'unknown'}',
+            'timestamp': DateTime.now().millisecondsSinceEpoch,
+          });
+        }
+        return null;
+      });
+      _platformHandlerRegistered = true;
+    }
     _loaded = true;
     notifyListeners();
   }

@@ -63,5 +63,15 @@ class NotificationService : NotificationListenerService() {
         }
 
         prefs.edit().putString("blocked_queue", updated).apply()
+        // also broadcast so foreground Flutter app can persist immediately
+        try {
+            val intent = android.content.Intent("com.kunst.launcher.NOTIFICATION_BLOCKED")
+            intent.putExtra("packageName", sbn.packageName)
+            intent.putExtra("title", title)
+            intent.putExtra("text", text)
+            intent.putExtra("timestamp", sbn.postTime)
+            sendBroadcast(intent)
+        } catch (_: Exception) {
+        }
     }
 }

@@ -15,14 +15,84 @@ class _PermissionOnboardingScreenState extends State<PermissionOnboardingScreen>
   final bool _saving = false;
 
   Future<void> _completePermissions(BuildContext context) async {
-    final databaseService = DatabaseService();
-    await databaseService.setSetting('first_launch_complete', '1');
-    if (!context.mounted) {
+    final missing = await _checkMissingPermissions();
+    if (missing.isEmpty) {
+      final databaseService = DatabaseService();
+      await databaseService.setSetting('first_launch_complete', '1');
+      if (!context.mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const FocusHomeScreen()),
+      );
       return;
     }
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const FocusHomeScreen()),
+
+    if (!context.mounted) return;
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Missing permissions'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: missing.map((m) => Text('• $m')).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Later'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _openMissingSettings(missing);
+            },
+            child: const Text('Open settings'),
+          ),
+        ],
+      ),
     );
+  }
+
+  Future<List<String>> _checkMissingPermissions() async {
+    final missing = <String>[];
+    final deviceAdmin = await _platformChannelService.isDeviceAdminActive();
+    if (!deviceAdmin) missing.add('Device admin');
+    final calendar = await _platformChannelService.hasCalendarPermissions();
+    if (!calendar) missing.add('Calendar');
+    final notifications = await _platformChannelService.isNotificationListenerEnabled();
+    if (!notifications) missing.add('Notifications');
+    final usage = await _platformChannelService.isUsageAccessGranted();
+    if (!usage) missing.add('Usage access');
+    final exactAlarms = await _platformChannelService.canScheduleExactAlarms();
+    if (!exactAlarms) missing.add('Exact alarms');
+    final battery = await _platformChannelService.isIgnoringBatteryOptimizations();
+    if (!battery) missing.add('Battery optimization');
+    return missing;
+  }
+
+  void _openMissingSettings(List<String> missing) {
+    for (final item in missing) {
+      switch (item) {
+        case 'Device admin':
+          _platformChannelService.requestDeviceAdmin();
+          break;
+        case 'Calendar':
+          _platformChannelService.requestCalendarPermissions();
+          break;
+        case 'Notifications':
+          _platformChannelService.openNotificationListenerSettings();
+          break;
+        case 'Usage access':
+          _platformChannelService.openUsageAccessSettings();
+          break;
+        case 'Exact alarms':
+          _platformChannelService.requestExactAlarmSettings();
+          break;
+        case 'Battery optimization':
+          _platformChannelService.requestIgnoreBatteryOptimizations();
+          break;
+      }
+    }
   }
 
   @override

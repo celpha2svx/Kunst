@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'platform_channel_service.dart';
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -88,6 +89,25 @@ class DatabaseService {
             is_active INTEGER DEFAULT 1
           )
         ''');
+
+    await db.execute('''
+          CREATE TABLE notifications_queue (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            package_name TEXT,
+            title TEXT,
+            body TEXT,
+            timestamp INTEGER,
+            processed INTEGER DEFAULT 0
+          )
+        ''');
+
+    await db.execute('''
+          CREATE TABLE app_whitelist (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            package_name TEXT NOT NULL UNIQUE,
+            created_at TEXT
+          )
+        ''');
   }
 
   Future<void> _seedDefaults(Database db) async {
@@ -132,6 +152,51 @@ class DatabaseService {
         ...world,
       }, conflictAlgorithm: ConflictAlgorithm.ignore);
     }
+  }
+
+  Future<int> insertBlockedNotification(Map<String, Object?> n) async {
+    final db = await database;
+    return db.insert('notifications_queue', {
+      'package_name': n['packageName']?.toString(),
+      'title': n['title']?.toString(),
+      'body': n['text']?.toString(),
+      'timestamp': n['timestamp']?.toString(),
+      'processed': 0,
+    });
+  }
+
+  Future<List<Map<String, Object?>>> getBlockedNotifications({int limit = 100}) async {
+    final db = await database;
+    return db.query('notifications_queue', orderBy: 'timestamp DESC', limit: limit);
+  }
+
+  Future<void> migrateBlockedQueueFromPrefs() async {
+    try {
+      final platform = PlatformChannelService();
+      final items = await platform.drainBlockedQueuePrefs();
+      for (final it in items) {
+        await insertBlockedNotification(it);
+      }
+    } catch (_) {}
+  }
+
+  Future<List<String>> getAppWhitelist() async {
+    final db = await database;
+    final rows = await db.query('app_whitelist', orderBy: 'id ASC');
+    return rows.map((r) => r['package_name']?.toString() ?? '').where((s) => s.isNotEmpty).toList();
+  }
+
+  Future<int> addToAppWhitelist(String packageName) async {
+    final db = await database;
+    return db.insert('app_whitelist', {
+      'package_name': packageName,
+      'created_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+  }
+
+  Future<int> removeFromAppWhitelist(String packageName) async {
+    final db = await database;
+    return db.delete('app_whitelist', where: 'package_name = ?', whereArgs: [packageName]);
   }
 
   Future<List<Map<String, Object?>>> getWorlds() async {
