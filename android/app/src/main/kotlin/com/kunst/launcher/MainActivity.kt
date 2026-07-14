@@ -308,7 +308,7 @@ class MainActivity: FlutterFragmentActivity() {
 			CalendarContract.Calendars.OWNER_ACCOUNT,
 			CalendarContract.Calendars.VISIBLE,
 			CalendarContract.Calendars.CAN_ORGANIZER_RESPOND,
-			CalendarContract.Calendars.ALLOWED_ACCESS_LEVEL,
+			CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
 			CalendarContract.Calendars.SYNC_EVENTS,
 		)
 		val selection = "${CalendarContract.Calendars.VISIBLE} = 1"
@@ -317,7 +317,7 @@ class MainActivity: FlutterFragmentActivity() {
 			val nameIndex = cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
 			val ownerIndex = cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)
 			while (cursor.moveToNext()) {
-				val accessLevel = cursor.getInt(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_ACCESS_LEVEL))
+				val accessLevel = cursor.getInt(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL))
 				if (accessLevel < CalendarContract.Calendars.CAL_ACCESS_CONTRIBUTOR) {
 					continue
 				}
