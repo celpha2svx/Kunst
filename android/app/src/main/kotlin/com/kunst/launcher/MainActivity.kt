@@ -21,6 +21,7 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import android.app.PendingIntent
+import androidx.core.content.ContextCompat
 
 class MainActivity: FlutterFragmentActivity() {
 	private var pendingCalendarPermissionResult: MethodChannel.Result? = null
@@ -271,9 +272,7 @@ class MainActivity: FlutterFragmentActivity() {
 					} catch (_: Exception) {
 					}
 				}
-			}
-		}
-		registerReceiver(receiver, android.content.IntentFilter("com.kunst.launcher.NOTIFICATION_BLOCKED"))
+                ContextCompat.registerReceiver(this, receiver, android.content.IntentFilter("com.kunst.launcher.NOTIFICATION_BLOCKED"), ContextCompat.RECEIVER_NOT_EXPORTED)
 
 		// listen for alarm fired broadcasts and forward to Flutter
 		val alarmReceiver = object : android.content.BroadcastReceiver() {
@@ -288,7 +287,7 @@ class MainActivity: FlutterFragmentActivity() {
 				}
 			}
 		}
-		registerReceiver(alarmReceiver, android.content.IntentFilter("com.kunst.launcher.ALARM_FIRED"))
+		ContextCompat.registerReceiver(this, alarmReceiver, android.content.IntentFilter("com.kunst.launcher.ALARM_FIRED"), ContextCompat.RECEIVER_NOT_EXPORTED)
 	}
 
 	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
